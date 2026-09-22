@@ -19,10 +19,6 @@ A demo student portal website for **La Salette of Aurora, Inc.** (Brgy. Sta. Ros
 
 > **Note:** All grades, schedules and event data are placeholder/demo content. Announcements, history, vision/mission and photos are sourced from the school's official online presence, including the Campus Ministry Facebook page: https://www.facebook.com/saletinocampusministry
 
-
-3. Repo **Settings → Pages → Source: Deploy from a branch → main / (root)**
-4. Your site will be live at `https://<username>.github.io/<repo>/`
-
 ## Credits
 - School seal & photos: La Salette of Aurora, Inc. / Campus Ministry official sources
 - Motto: *Vervo et Opere* — Est. 1952

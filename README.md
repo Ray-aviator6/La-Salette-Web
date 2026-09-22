@@ -19,16 +19,7 @@ A demo student portal website for **La Salette of Aurora, Inc.** (Brgy. Sta. Ros
 
 > **Note:** All grades, schedules and event data are placeholder/demo content. Announcements, history, vision/mission and photos are sourced from the school's official online presence, including the Campus Ministry Facebook page: https://www.facebook.com/saletinocampusministry
 
-## Run locally
-Just open `index.html` in a browser, or serve the folder:
 
-```bash
-npx serve .
-```
-
-## Deploy to GitHub Pages
-1. Create a new GitHub repository
-2. Push this folder's contents to the `main` branch
 3. Repo **Settings → Pages → Source: Deploy from a branch → main / (root)**
 4. Your site will be live at `https://<username>.github.io/<repo>/`
 

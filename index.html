@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Salette of Aurora, Inc. — Student Portal</title>
+<style>
+  :root{
+    --blue:#1b3a8c; --blue-dark:#122a66; --gold:#f2b705; --gold-soft:#ffe9a8;
+    --ink:#1e2430; --muted:#6b7280; --bg:#f4f6fb; --card:#ffffff; --line:#e3e8f2;
+    --green:#1e8e5a; --red:#c0392b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+  body{background:var(--bg);color:var(--ink)}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--blue-dark),var(--blue) 55%,#2b4fb3);z-index:100;transition:opacity .5s}
+  #loginScreen.hidden{opacity:0;pointer-events:none}
+  .login-card{background:#fff;border-radius:18px;padding:42px 38px;width:390px;max-width:92vw;
+    box-shadow:0 25px 60px rgba(0,0,0,.35);text-align:center}
+  .login-card img{width:110px;margin-bottom:14px}
+  .login-card h1{font-size:20px;color:var(--blue);letter-spacing:.5px}
+  .login-card p.sub{font-size:12.5px;color:var(--muted);margin:6px 0 24px}
+  .field{text-align:left;margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--blue);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+  .field input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;outline:none;transition:.2s}
+  .field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,183,5,.18)}
+  .btn-gold{background:var(--gold);color:#3a2c00;border:none;padding:13px 20px;border-radius:10px;
+    font-weight:700;font-size:15px;cursor:pointer;width:100%;transition:.2s;letter-spacing:.4px}
+  .btn-gold:hover{background:#ffc81a;transform:translateY(-1px)}
+  .login-hint{margin-top:16px;font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px}
+  .login-hint code{color:var(--blue);font-weight:600}
+
+  /* ---------- SHELL ---------- */
+  header.topbar{background:var(--blue-dark);color:#fff;display:flex;align-items:center;gap:14px;
+    padding:10px 22px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  header.topbar img{width:44px;height:44px;border-radius:50%;background:#fff;padding:3px}
+  header.topbar .titles h1{font-size:16px;line-height:1.2}
+  header.topbar .titles span{font-size:11.5px;color:var(--gold-soft);letter-spacing:1px;text-transform:uppercase}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .topbar-right .user{font-size:13px;text-align:right}
+  .topbar-right .user small{display:block;color:var(--gold-soft);font-size:11px}
+  .btn-logout{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);
+    padding:7px 14px;border-radius:8px;font-size:12.5px;cursor:pointer}
+  .btn-logout:hover{background:rgba(255,255,255,.22)}
+
+  nav.tabs{display:flex;gap:4px;background:var(--blue);padding:0 18px;overflow-x:auto;position:sticky;top:64px;z-index:49}
+  nav.tabs button{background:none;border:none;color:#cdd8f5;padding:14px 18px;font-size:13.5px;font-weight:600;
+    cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;letter-spacing:.3px}
+  nav.tabs button:hover{color:#fff}
+  nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+  main{max-width:1180px;margin:26px auto 60px;padding:0 20px}
+  .page{display:none;animation:fade .35s}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .page h2{font-size:24px;color:var(--blue);margin-bottom:4px}
+  .page .lede{color:var(--muted);font-size:14px;margin-bottom:22px}
+
+  .grid{display:grid;gap:18px}
+  .grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;
+    box-shadow:0 2px 8px rgba(20,40,90,.05)}
+  .card h3{font-size:15px;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card h3 .ico{width:28px;height:28px;border-radius:8px;background:var(--gold-soft);display:grid;place-items:center;font-size:15px}
+
+  .announce{border-left:4px solid var(--gold);background:#fffdf4;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .announce .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+    color:var(--blue);background:var(--gold-soft);padding:3px 9px;border-radius:20px;margin-bottom:6px}
+  .announce h4{font-size:14.5px;margin-bottom:4px}
+  .announce p{font-size:13px;color:#4b5563;line-height:1.55}
+  .announce .date{font-size:11.5px;color:var(--muted);margin-top:7px}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{background:var(--blue);color:#fff;text-align:left;padding:10px 12px;font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+  td{padding:10px 12px;border-bottom:1px solid var(--line)}
+  tr:hover td{background:#f8faff}
+  .pill{padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700}
+  .pill.ok{background:#e2f6ec;color:var(--green)}
+  .pill.warn{background:#fdeaea;color:var(--red)}
+  .pill.mid{background:var(--gold-soft);color:#8a6a00}
+
+  .gwa-hero{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  .gwa-circle{width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--gold) 0 var(--deg),#e8ecf5 var(--deg) 360deg);
+    display:grid;place-items:center;flex-shrink:0}
+  .gwa-circle div{width:98px;height:98px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    font-size:26px;font-weight:800;color:var(--blue)}
+  .stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .stat{flex:1;min-width:130px;background:var(--bg);border-radius:12px;padding:14px;text-align:center}
+  .stat b{display:block;font-size:22px;color:var(--blue)}
+  .stat span{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+  .event{display:flex;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+  .event:last-child{border-bottom:none}
+  .event .cal{flex-shrink:0;width:52px;text-align:center;background:var(--blue);color:#fff;border-radius:10px;padding:7px 0}
+  .event .cal b{display:block;font-size:18px;line-height:1}
+  .event .cal span{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold-soft)}
+  .event h5{font-size:13.5px;margin-bottom:2px}
+  .event p{font-size:12px;color:var(--muted)}
+
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .gallery figure{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}
+  .gallery img{width:100%;height:180px;object-fit:cover;display:block;transition:transform .35s}
+  .gallery figure:hover img{transform:scale(1.06)}
+  .gallery figcaption{font-size:12px;color:var(--muted);padding:9px 12px}
+
+  .values li{list-style:none;display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .values li:last-child{border:none}
+  .values .n{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:var(--blue);color:#fff;
+    display:grid;place-items:center;font-size:12.5px;font-weight:700}
+
+  .hero-banner{border-radius:16px;overflow:hidden;position:relative;margin-bottom:24px;min-height:230px;
+    background:linear-gradient(120deg,var(--blue-dark) 30%,rgba(27,58,140,.75)),url('assets/4_La_Salette_of_Aurora_2012.png') center/cover;
+    display:flex;align-items:center;padding:38px}
+  .hero-banner h2{color:#fff;font-size:30px;margin-bottom:8px}
+  .hero-banner p{color:var(--gold-soft);max-width:560px;font-size:15px;line-height:1.6}
+  .motto{display:inline-block;margin-top:14px;background:var(--gold);color:#3a2c00;font-weight:700;
+    padding:7px 18px;border-radius:30px;font-size:13px;letter-spacing:2px}
+
+  .prayer{background:linear-gradient(135deg,#fffdf4,#fff);border:1px solid #f0dfa0}
+  .prayer p{font-size:13.5px;line-height:1.75;font-style:italic;color:#4b5563}
+  .prayer .am{font-style:normal;font-weight:700;color:var(--blue);margin-top:10px}
+
+  footer{background:var(--blue-dark);color:#cdd8f5;text-align:center;padding:26px 20px;font-size:12.5px;margin-top:40px}
+  footer b{color:#fff}
+  footer a{color:var(--gold);text-decoration:none}
+  .fb-btn{display:inline-flex;align-items:center;gap:8px;background:#1877F2;color:#fff;padding:10px 20px;
+    border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin-top:6px}
+  .fb-btn:hover{background:#0f5ec2}
+  @media(max-width:640px){header.topbar .titles h1{font-size:13px}nav.tabs{top:64px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="assets/3_La_Salette_of_Aurora_Inc_PAASCU.png" alt="La Salette of Aurora seal">
+    <h1>La Salette of Aurora, Inc.</h1>
+    <p class="sub">STUDENT PORTAL · Brgy. Sta. Rosa, Aurora, Isabela</p>
+    <div class="field"><label>Student Number</label><input id="stuNo" type="text" placeholder="e.g. 2024-00123"></div>
+    <div class="field"><label>Password</label><input id="stuPw" type="password" placeholder="••••••••"></div>
+    <button class="btn-gold" onclick="login()">Sign In</button>
+    <div class="login-hint">Demo access — Student No: <code>2024-00123</code> · Password: <code>salette</code></div>
+  </div>
+</div>
+
+<!-- APP -->
+<header class="topbar">
+  <img src="assets/3_La_Salette_of_Aurora_Inc_PAASCU.png" alt="seal">
+  <div class="titles">
+    <h1>La Salette of Aurora, Inc.</h1>
+    <span>Vervo et Opere · Aurora, Isabela</span>
+  </div>
+  <div class="topbar-right">
+    <div class="user"><span id="userName">Student</span><small id="userMeta">Grade 10 · St. Isidore</small></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-page="dashboard" onclick="go('dashboard',this)">🏠 Dashboard</button>
+  <button data-page="grades" onclick="go('grades',this)">📊 Grades</button>
+  <button data-page="schedule" onclick="go('schedule',this)">🗓 Schedule</button>
+  <button data-page="ministry" onclick="go('ministry',this)">⛪ Campus Ministry</button>
+  <button data-page="announcements" onclick="go('announcements',this)">📢 Announcements</button>
+  <button data-page="about" onclick="go('about',this)">🏛 About the School</button>
+</nav>
+
+<main>
+  <!-- DASHBOARD -->
+  <section class="page active" id="dashboard">
+    <div class="hero-banner">
+      <div>
+        <h2>Magandang araw, <span id="greetName">Salettinian</span>! 👋</h2>
+        <p>Welcome to the official student portal of La Salette of Aurora, Inc. — one of the eight La Salette schools in the province of Isabela, serving the youth of Aurora, Burgos and San Manuel since 1952.</p>
+        <span class="motto">VERVO ET OPERE</span>
+      </div>
+    </div>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3><span class="ico">📢</span>Latest Announcements</h3>
+        <div class="announce">
+          <span class="tag">Admissions</span>
+          <h4>Enrollment for SY 2025–2026 is now open!</h4>
+          <p>La Salette of Aurora is accepting enrollees. Join our Salettinian family and experience quality education, values formation, and a vibrant faith community.</p>
+          <div class="date">Posted by Campus Ministry · Official Facebook Page</div>
+        </div>
+        <div class="announce">
+          <span class="tag">Student Government</span>
+          <h4>Congratulations, newly elected SELG & SSLG Officers SY 2026–2027!</h4>
+          <p>The Campus Ministry extends its warmest congratulations to the newly elected Supreme Elementary & Secondary Learner Government officers.</p>
+          <div class="date">Posted by SELG & SSLG - La Salette of Aurora, Inc.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3><span class="ico">🗓</span>Upcoming Events</h3>
+        <div class="event"><div class="cal"><b>19</b><span>Sep</span></div><div><h5>First Friday Mass</h5><p>School Chapel · 7:30 AM · All students required</p></div></div>
+        <div class="event"><div class="cal"><b>26</b><span>Sep</span></div><div><h5>Campus Ministry Recollection</h5><p>Grade 10 & 12 · St. Isidore Hall</p></div></div>
+        <div class="event"><div class="cal"><b>03</b><span>Oct</span></div><div><h5>Foundation Month Opening</h5><p>Quad · Foundation Day celebration kick-off</p></div></div>
+        <div class="event"><div class="cal"><b>17</b><span>Oct</span></div><div><h5>Quarterly Examinations</h5><p>First Quarter Exams · See class schedule</p></div></div>
+      </div>
+      <div class="card">
+        <h3><span class="ico">📊</span>Academic Snapshot</h3>
+        <div class="gwa-hero">
+          <div class="gwa-circle"><div>90.2</div></div>
+          <div>
+            <b style="font-size:15px">General Weighted Average</b>
+            <p style="font-size:12.5px;color:var(--muted);margin-top:4px">First Quarter · Grade 10<br>Rank: Top 10% of section</p>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>7</b><span>Subjects</span></div>
+          <div class="stat"><b>0</b><span>Failing</span></div>
+          <div class="stat"><b>2</b><span>Honors</span></div>
+          <div class="stat"><b>95%</b><span>Attendance</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRADES -->
+  <section class="page" id="grades">
+    <h2>Grades & Academic Record</h2>
+    <p class="lede">First Quarter · School Year 2026–2027 · Grade 10 — St. Isidore</p>
+    <div class="card" style="margin-bottom:18px">
+      <h3><span class="ico">📋</span>Subject Grades</h3>
+      <table>
+        <tr><th>Subject</th><th>Teacher</th><th>Q1 Grade</th><th>Remarks</th></tr>
+        <tr><td>Filipino</td><td>Mrs. R. Agustin</td><td><b>92</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>English</td><td>Mr. J. Villanueva</td><td><b>91</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>Mathematics</td><td>Mrs. L. Dominguez</td><td><b>88</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>Science</td><td>Mr. P. Ramos</td><td><b>90</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>Araling Panlipunan</td><td>Ms. K. Bautista</td><td><b>89</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>MAPEH</td><td>Mr. E. Soriano</td><td><b>93</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>TLE</td><td>Mrs. M. Flores</td><td><b>91</b></td><td><span class="pill ok">Passed</span></td></tr>
+        <tr><td>Christian Living Education</td><td>Fr. A. Dacanay, MS</td><td><b>94</b></td><td><span class="pill ok">Passed · Honors</span></td></tr>
+        <tr><td><b>General Weighted Average</b></td><td></td><td><b style="color:var(--blue)">90.2</b></td><td><span class="pill mid">With Honors</span></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3><span class="ico">⚠️</span>Important Notes</h3>
+      <p style="font-size:13.5px;line-height:1.7;color:#4b5563">
+        • Grades shown are sample/demo records for the portal mock-up.<br>
+        • For official grade verification, please proceed to the Registrar's Office or contact your class adviser.<br>
+        • Report cards are released every end of the quarter during the Parent-Teacher Conference.
+      </p>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="page" id="schedule">
+    <h2>Class Schedule</h2>
+    <p class="lede">Grade 10 — St. Isidore · Mondays–Fridays</p>
+    <div class="card">
+      <table>
+        <tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr>
+        <tr><td>7:30 – 8:20</td><td>Flag Ceremony / Homeroom</td><td>Filipino</td><td>English</td><td>Science</td><td>MAPEH</td></tr>
+        <tr><td>8:20 – 9:10</td><td>Mathematics</td><td>Filipino</td><td>English</td><td>Science</td><td>MAPEH</td></tr>
+        <tr><td>9:10 – 9:30</td><td colspan="5" style="text-align:center;background:#f8faff"><b>RECESS</b></td></tr>
+        <tr><td>9:30 – 10:20</td><td>English</td><td>Mathematics</td><td>Christian Living</td><td>Araling Panlipunan</td><td>TLE</td></tr>
+        <tr><td>10:20 – 11:10</td><td>Science</td><td>Mathematics</td><td>Christian Living</td><td>Araling Panlipunan</td><td>TLE</td></tr>
+        <tr><td>11:10 – 12:00</td><td colspan="5" style="text-align:center;background:#f8faff"><b>LUNCH BREAK</b></td></tr>
+        <tr><td>12:00 – 12:50</td><td>Araling Panlipunan</td><td>Science</td><td>Mathematics</td><td>Filipino</td><td>Christian Living</td></tr>
+        <tr><td>12:50 – 1:40</td><td>TLE</td><td>MAPEH</td><td>Filipino</td><td>TLE</td><td>English</td></tr>
+        <tr><td>1:40 – 2:30</td><td>Christian Living</td><td>MAPEH</td><td>Araling Panlipunan</td><td>—</td><td>Club / Ministry Time</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- MINISTRY -->
+  <section class="page" id="ministry">
+    <h2>Campus Ministry</h2>
+    <p class="lede">Living the message of Our Lady of La Salette: Reconciliation, Prayer, Penance and Zeal.</p>
+    <div class="grid cols-2" style="margin-bottom:18px">
+      <div class="card prayer">
+        <h3><span class="ico">🕊</span>Prayer to Our Lady of La Salette</h3>
+        <p>"Remember, dear Our Lady of La Salette, true Mother of Sorrows, the tears which thou didst shed for me on Calvary; be mindful also of the unceasing care which thou takest of me, and obtain for me the pardon of all my sins. Amen."</p>
+        <div class="am">— Amen</div>
+      </div>
+      <div class="card">
+        <h3><span class="ico">⛪</span>Regular Ministry Activities</h3>
+        <div class="event"><div class="cal"><b>F</b><span>Fri</span></div><div><h5>First Friday Mass</h5><p>School Chapel · 7:30 AM before classes</p></div></div>
+        <div class="event"><div class="cal"><b>RC</b><span>Mon</span></div><div><h5>Rosary Crusade</h5><p>Daily recitation of the Holy Rosary at the grotto</p></div></div>
+        <div class="event"><div class="cal"><b>YM</b><span>Wed</span></div><div><h5>Youth Ministry / YOLO Meetings</h5><p>Youth of Our Lady of La Salette org sessions</p></div></div>
+        <div class="event"><div class="cal"><b>SV</b><span>Sat</span></div><div><h5>Servant Leadership & Apostolate</h5><p>Outreach programs in Brgy. Sta. Rosa and nearby towns</p></div></div>
+      </div>
+    </div>
+    <div class="grid cols-3">
+      <div class="card"><h3><span class="ico">📿</span>Prayer, Penance, Zeal</h3>
+        <p style="font-size:13.5px;line-height:1.7;color:#4b5563">The three hallmarks of La Salette spirituality, woven into daily school life — from morning prayers to seasonal recollections and retreats.</p></div>
+      <div class="card"><h3><span class="ico">🤝</span>SELG & SSLG</h3>
+        <p style="font-size:13.5px;line-height:1.7;color:#4b5563">The Supreme Elementary & Secondary Learner Governments serve as the voice of the student body, working hand-in-hand with the Campus Ministry.</p></div>
+      <div class="card"><h3><span class="ico">🌟</span>Reconciliation</h3>
+        <p style="font-size:13.5px;line-height:1.7;color:#4b5563">Following Our Lady's call at La Salette, France (1846), the ministry invites every Salettinian to be a reconciler — with God, self, and others.</p></div>
+    </div>
+  </section>
+
+  <!-- ANNOUNCEMENTS -->
+  <section class="page" id="announcements">
+    <h2>Announcements</h2>
+    <p class="lede">Sourced from the official Campus Ministry Facebook page · facebook.com/saletinocampusministry</p>
+    <div class="card">
+      <div class="announce">
+        <span class="tag">Admissions</span>
+        <h4>La Salette of Aurora is now accepting enrollees for School Year 2025–2026!</h4>
+        <p>Join our Salettinian family and experience quality education, values formation, and a strong faith community. Inquiries may be directed to the school office at Brgy. Sta. Rosa, Aurora, Isabela.</p>
+        <div class="date">Campus Ministry · Official Page</div>
+      </div>
+      <div class="announce">
+        <span class="tag">Student Government</span>
+        <h4>Congratulations to the newly elected SELG Officers for SY 2026–2027!</h4>
+        <p>The Campus Ministry extends its warmest congratulations to the newly elected Supreme Elementary Learner Government officers. May you lead with the heart of Mary!</p>
+        <div class="date">SELG & SSLG - La Salette of Aurora, Inc.</div>
+      </div>
+      <div class="announce">
+        <span class="tag">Faith Life</span>
+        <h4>Daily Rosary at the La Salette Grotto</h4>
+        <p>All students are invited to pause and pray with Our Lady every morning before the first bell. Bring your rosary and a friend!</p>
+        <div class="date">Campus Ministry</div>
+      </div>
+      <div class="announce">
+        <span class="tag">Reminder</span>
+        <h4>Complete school uniform & ID required</h4>
+        <p>Students must wear the complete school uniform with ID at all times. Gate inspection is strictly enforced by our security personnel.</p>
+        <div class="date">Administration Office</div>
+      </div>
+      <a class="fb-btn" href="https://www.facebook.com/saletinocampusministry" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.49h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg>
+        Follow the official Campus Ministry page
+      </a>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="page" id="about">
+    <h2>About La Salette of Aurora, Inc.</h2>
+    <p class="lede">A School of Excellence since 1952 · Brgy. Sta. Rosa, Aurora, Isabela, Philippines</p>
+    <div class="gallery" style="margin-bottom:18px">
+      <figure><img src="assets/4_La_Salette_of_Aurora_2012.png" alt="School building"><figcaption>The La Salette of Aurora school building</figcaption></figure>
+      <figure><img src="assets/7_La_Salette_Of_Aurora_A_School_Of.png" alt="Front gate"><figcaption>The front gate of the campus, guarded daily by our security personnel</figcaption></figure>
+      <figure><img src="assets/6_La_Salette_of_Aurora_July_2012.png" alt="Our Lady of La Salette statue"><figcaption>Our Lady of La Salette, patroness of the school</figcaption></figure>
+      <figure><img src="assets/5_Our_Lady_of_La_Salette_Facts_for.png" alt="Our Lady of La Salette"><figcaption>Our Lady of La Salette — Reconciler of Sinners</figcaption></figure>
+    </div>
+    <div class="grid cols-2" style="margin-bottom:18px">
+      <div class="card">
+        <h3><span class="ico">📖</span>Our History</h3>
+        <p style="font-size:13.5px;line-height:1.8;color:#4b5563">
+          La Salette of Aurora, Inc., one among the La Salette schools in the province of Isabela, is located in Brgy. Sta. Rosa, Aurora — a town west of Cabatuan across the Magat River. In 1952, the late Rev. Fr. Paul Doulliard, MS, Parish Priest of St. Isidore Parish, envisioned a school for the Catholic families' children of his parish. By March 1952, the school was incorporated as a non-stock, non-profit institution for secondary education, opening its doors on July 1, 1952 with 193 students. Since then, it has served the educational needs of Western Isabela — Aurora, Burgos, and San Manuel — earning recognition from the Ministry of Education and Culture. Today, it is a PAASCU-accredited Basic Education institution (Level I, since 2016).
+        </p>
+      </div>
+      <div class="card">
+        <h3><span class="ico">🎯</span>Vision & Mission</h3>
+        <p style="font-size:13.5px;line-height:1.8;color:#4b5563;margin-bottom:14px">
+          <b style="color:var(--blue)">Vision:</b> La Salette School System is a community of Catholic schools called to evangelize the young in the spirit of Our Lady of La Salette's message of Reconciliation.
+        </p>
+        <p style="font-size:13.5px;line-height:1.8;color:#4b5563;margin-bottom:14px">
+          <b style="color:var(--blue)">Mission:</b> To provide excellent Catholic education, to enable the young to attain "fullness of life." (John 10:10)
+        </p>
+        <h3 style="margin-top:18px"><span class="ico">💎</span>Core Values</h3>
+        <ul class="values">
+          <li><span class="n">1</span>Mary's Fiat</li>
+          <li><span class="n">2</span>Prayer, Penance and Zeal</li>
+          <li><span class="n">3</span>Excellence</li>
+          <li><span class="n">4</span>Solidarity</li>
+          <li><span class="n">5</span>Stewardship</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="ico">📍</span>Visit Us</h3>
+      <p style="font-size:13.5px;color:#4b5563;line-height:1.7">
+        <b>La Salette of Aurora, Inc.</b><br>
+        Brgy. Sta. Rosa, Aurora 3316, Isabela, Philippines<br>
+        Run by the Missionaries of Our Lady of La Salette (MS) · Founded 1952<br>
+        Motto: <b>Vervo et Opere</b> · PAASCU Accredited (Basic Education, Level I)
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <b>La Salette of Aurora, Inc.</b> · Brgy. Sta. Rosa, Aurora, Isabela · Est. 1952<br>
+  Student Portal (demo) · All photos & announcements sourced from the official
+  <a href="https://www.facebook.com/saletinocampusministry" target="_blank" rel="noopener">Campus Ministry Facebook page</a>
+</footer>
+
+<script>
+  function login(){
+    const no=document.getElementById('stuNo').value.trim();
+    const pw=document.getElementById('stuPw').value;
+    if(no==='2024-00123'&&pw==='salette'){
+      document.getElementById('loginScreen').classList.add('hidden');
+    }else{
+      alert('Invalid credentials. Use the demo access shown below the button.');
+    }
+  }
+  document.getElementById('stuPw').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+  function logout(){document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('stuPw').value='';}
+  function go(id,btn){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');btn.classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  // Greeting based on time
+  const h=new Date().getHours();
+  const g=h<12?'Magandang umaga':h<18?'Magandang hapon':'Magandang gabi';
+  document.getElementById('greetName').textContent=g+', Salettinian';
+  document.getElementById('userName').textContent='Juan D. Salettinian';
+</script>
+</body>
+</html>
